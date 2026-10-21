@@ -1,0 +1,156 @@
+openapi: 3.0.0
+info:
+  title: GestorDeTareas_Collection
+  version: 1.0.0
+  description: ''
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /api/auth/registro:
+    post:
+      summary: 'http://localhost:3000/api/auth/registro'
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+            example:
+              nombre: Otro Nombre
+              email: prueba@test.com
+              password: otra_clave
+  /api/resenas:
+    get:
+      summary: 'http://localhost:3000/api/resenas'
+      responses: {}
+    post:
+      summary: ' http://localhost:3000/api/resenas'
+      responses: {}
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tareaId:
+                  type: integer
+                autor:
+                  type: string
+                comentario:
+                  type: string
+                estrellas:
+                  type: integer
+            example:
+              tareaId: 1
+              autor: Prueba
+              comentario: Muy buena
+              estrellas: 8
+  /api/tareas/1:
+    delete:
+      summary: 'http://localhost:3000/api/tareas/1'
+      responses: {}
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+    put:
+      summary: 'http://localhost:3000/api/tareas/1'
+      responses: {}
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                descripcion:
+                  type: string
+                estado:
+                  type: string
+                prioridad:
+                  type: string
+            example:
+              titulo: Tarea Actualizada
+              descripcion: Ya sé usar Postman
+              estado: completada
+              prioridad: alta
+    get:
+      summary: 'http://localhost:3000/api/tareas/1'
+      responses: {}
+      security:
+        - BearerAuth: []
+  /api/tareas/999:
+    get:
+      summary: 'http://localhost:3000/api/tareas/999'
+      responses: {}
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+  /api/tareas:
+    post:
+      summary: 'http://localhost:3000/api/tareas'
+      responses: {}
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                descripcion:
+                  type: string
+                prioridad:
+                  type: string
+            example:
+              titulo: Mi primera tarea
+              descripcion: Aprender a usar Postman
+              prioridad: alta
+    get:
+      summary: 'http://localhost:3000/api/tareas'
+      responses: {}
+  /api/auth/login:
+    post:
+      summary: 'http://localhost:3000/api/auth/login'
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+            example:
+              email: prueba@test.com
+              password: mi_password_seguro
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
