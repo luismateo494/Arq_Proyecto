@@ -2,9 +2,10 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import tareasHexagonal from './modules/tareas/infrastructure/tareasRoutes.js';
 
 import auth from "./routes/auth.routes.js";
-import tareas from "./routes/tareas.routes.js";
+
 import resenas from "./routes/resenas.routes.js";
 import { errores } from "./middlewares/errores.js";
 
@@ -18,7 +19,8 @@ app.get("/api/salud", (req, res) => {
 });
 
 app.use('/api/auth', auth);
-app.use('/api/tareas', tareas);
+
+app.use('/api/tareas', tareasHexagonal);
 app.use('/api/resenas', resenas);
 
 app.use(errores);
