@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { getPool } from "./db/sqlserver.js"; // <-- Importante
+import tareasRoutes from "./modules/tareas/infrastructure/tareasRoutes.js"; 
+
 dotenv.config();
 
 const app = express();
@@ -11,7 +14,16 @@ app.get("/api/salud", (req, res) => {
   res.json({ servicio: "Tareas", status: "OK" });
 });
 
+app.use("/api/tareas", tareasRoutes);
+
 const PORT = process.env.PORT || 3002;
-app.listen(PORT, () => {
-  console.log(`📋 Microservicio de Tareas escuchando en el puerto ${PORT}`);
+
+// ESTO ES LO QUE FALTA:
+app.listen(PORT, async () => { 
+  try {
+    await getPool(); // <-- Obliga a conectar a SQL antes de decir que está listo
+    console.log(`📋 Microservicio de Tareas escuchando en el puerto ${PORT}`);
+  } catch (error) {
+    console.error("❌ Error al conectar a SQL Server:", error.message);
+  }
 });
