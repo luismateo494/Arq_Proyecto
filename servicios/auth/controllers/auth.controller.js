@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getPool, sql } from "../db/sqlserver.js";
-// import { publicarEvento } from "../rabbitmq.js"; // Lo activaremos después
+import { publicarEvento } from "../rabbitmq.js"; 
 
 export async function registro(req, res) {
   try {
@@ -23,8 +23,8 @@ export async function registro(req, res) {
               
     const nuevoUsuario = r.recordset[0];
 
-    // AQUÍ PUBLICAREMOS EL EVENTO EN RABBITMQ LUEGO
-    // publicarEvento('usuario.creado', nuevoUsuario);
+    // 👇 AQUÍ SE PUBLICA EL EVENTO (Ya sin las //)
+    await publicarEvento('usuario.creado', nuevoUsuario);
 
     res.status(201).json(nuevoUsuario);
   } catch (error) {

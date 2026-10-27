@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { getPool } from "./db/sqlserver.js"; // <-- Importante
 import tareasRoutes from "./modules/tareas/infrastructure/tareasRoutes.js"; 
+import { escucharEventos } from "./rabbitmq.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ const PORT = process.env.PORT || 3002;
 app.listen(PORT, async () => { 
   try {
     await getPool(); // <-- Obliga a conectar a SQL antes de decir que está listo
+    await escucharEventos();  //llama a Rabbit
     console.log(`📋 Microservicio de Tareas escuchando en el puerto ${PORT}`);
   } catch (error) {
     console.error("❌ Error al conectar a SQL Server:", error.message);
