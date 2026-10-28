@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # 1. Base de datos para Auth
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=TaskFlow123!  # <-- ¡Ojo! Esta es la contraseña que usarán los servicios en Docker
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  # 2. Base de datos para Tareas (MongoDB)
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # 3. RabbitMQ (Mensajería)
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # 4. Microservicio Auth
+  auth-service:
+    build: ./servicios/auth
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - SQL_SERVER=sqlserver # <-- En Docker, usamos el nombre del servicio, no localhost
+      - SQL_PORT=1433
+      - SQL_USER=sa
+      - SQL_PASSWORD=TaskFlow123!
+      - SQL_DATABASE=TaskFlowAuthDB
+      - JWT_SECRET=mi_secreto_super_seguro
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - sqlserver
+      - rabbitmq
+
+       # 5. Microservicio Tareas
+  tareas-service:
+    build: ./servicios/tareas
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - SQL_SERVER=sqlserver
+      - SQL_PORT=1433
+      - SQL_USER=sa
+      - SQL_PASSWORD=TaskFlow123!
+      - SQL_DATABASE=TaskFlowTareasDB
+      - MONGO_URI=mongodb://mongodb:27017/taskflow_tareas
+      - JWT_SECRET=mi_secreto_super_seguro
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - sqlserver
+      - mongodb
+      - rabbitmq
+
+  # 6. API Gateway
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - TAREAS_SERVICE_URL=http://tareas-service:3002
+    depends_on:
+      - auth-service
+      - tareas-service
+
+volumes:
+  sql_data:
+  mongo_data:
