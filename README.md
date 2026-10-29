@@ -1,6 +1,6 @@
 # TaskFlow - Gestor de Tareas Full Stack
 
-TaskFlow es una aplicación web Full Stack para la gestión de tareas personales. Permite a los usuarios registrarse, iniciar sesión, y administrar sus propias tareas (crear, listar, editar, completar y eliminar).
+TaskFlow es una aplicación Full Stack basada en microservicios. Permite a los usuarios registrarse, iniciar sesión y administrar tareas personales. Utiliza mensajería asíncrona (RabbitMQ) para comunicar eventos entre servicios.
 
 # Tecnologías Usadas
 
@@ -11,6 +11,7 @@ TaskFlow es una aplicación web Full Stack para la gestión de tareas personales
  JSON Web Tokens (JWT) para autenticación
  Bcrypt.js para encriptación de contraseñas
  Arquitectura Hexagonal para el módulo de Tareas
+RabbitMQ.
 
 **Frontend:**
  React (creado con Vite)
@@ -18,18 +19,90 @@ TaskFlow es una aplicación web Full Stack para la gestión de tareas personales
  React Query (`@tanstack/react-query` para manejo de estado del servidor y caché)
  Fetch API (Cliente HTTP nativo)
 
+ **Pruebas**
+ Vitest
+ Jest
+
 ## Pasos para correr el proyecto
 
  Levantar las bases de datos (Docker)
  Configurar variables de entorno entra a la caperta api/.env.example  y renombralo .env
 
-## Ejecutar backend 
+En la carpeta raiz ejecuta en la terminal 
+
+docker compose up --build -d
+
+## Para levantar el frontend:
+
 npm install
 npm run dev
 
-## Ejecutar frontend
-npm install
-npm run dev
+**Correr las pruebas***
+
+## Backend (Jest):
+
+cd servicios/tareas
+npm test
+
+## Frontend (Vitest):
+
+cd frontend
+npm test -- --run
+
+## Arquitectura de Microservicios
+
+     [ Frontend React ] (Puerto 5173)
+
+                 │
+                  (HTTP)
+ [ API Gateway ] (Puerto 3000)
+             │
+             │_ [ Auth Service ] (Puerto 3001) ──▶ SQL Server (TaskFlowAuthDB)
+             │
+             │_ [ Tareas Service ] (Puerto 3002) ──▶ SQL Server (TaskFlowTareasDB)
+                                             │
+                                             │_ MongoDB (Reseñas)
+
+                    
+
+   [ Mensajería RabbitMQ ] ----- (Evento: usuario.creado) ─── Auth Service
+                                                         │__Tareas Service
+                                                         
+
+                                                         
+**Endpoint principales**
+
+## Auth Service (Público):
+
+POST /api/auth/registro - Crea un usuario y publica el evento usuario.creado.
+
+POST /api/auth/login - Devuelve el token JWT (dura 1 hora).
+
+##  Tareas Service (Requiere Bearer Token en el Header):
+
+GET /api/tareas - Lista las tareas del usuario.
+
+POST /api/tareas - Crea una nueva tarea.
+
+PUT /api/tareas/:id - Actualiza una tarea.
+
+DELETE /api/tareas/:id - Elimina una tarea.
+
+##  Reseñas (MongoDB):
+
+
+GET /api/resenas - Lista las reseñas.
+
+POST /api/resenas - Crea una reseña (protegido).
+
+
+**Mensajería (RabbitMQ)**
+
+Publica: El microservicio de Auth al registrar un usuario (usuario.creado).
+
+Consume: El microservicio de Tareas, que escucha el evento y reacciona en consola.
+
+
 
 ## Arquitectura del Proyecto
 
