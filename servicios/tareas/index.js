@@ -1,9 +1,14 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { getPool } from "./db/sqlserver.js"; // <-- Importante
-import tareasRoutes from "./modules/tareas/infrastructure/tareasRoutes.js"; 
+import { getPool } from "./db/sqlserver.js";
+import { connectMongo } from "./db/mongo.js"; // O como tengas tu conexión a Mongo
+import tareasRoutes from "./modules/tareas/infrastructure/tareasRoutes.js";
 import { escucharEventos } from "./rabbitmq.js";
+
+// 1. IMPORTAR EL CONTROLADOR DE RESEÑAS
+import { listarResenas, crearResena } from "./controllers/resenas.controller.js";
+import { verificarToken } from "./middlewares/auth.js";
 
 dotenv.config();
 
@@ -17,15 +22,18 @@ app.get("/api/salud", (req, res) => {
 
 app.use("/api/tareas", tareasRoutes);
 
-const PORT = process.env.PORT || 3002;
+// 2. AGREGAR LAS RUTAS (Asegúrate de que estén aquí)
+app.get("/api/resenas", listarResenas);
+app.post("/api/resenas", verificarToken, crearResena);
 
-// ESTO ES LO QUE FALTA:
-app.listen(PORT, async () => { 
+const PORT = process.env.PORT || 3002;
+app.listen(PORT, async () => {
   try {
-    await getPool(); // <-- Obliga a conectar a SQL antes de decir que está listo
-    await escucharEventos();  //llama a Rabbit
+    await getPool();
+    await connectMongo();
+    await escucharEventos();
     console.log(`📋 Microservicio de Tareas escuchando en el puerto ${PORT}`);
   } catch (error) {
-    console.error("❌ Error al conectar a SQL Server:", error.message);
+    console.error("❌ Error al iniciar Tareas:", error.message);
   }
 });
